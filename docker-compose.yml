@@ -1,0 +1,84 @@
+version: '3.8'
+
+services:
+  # 1. Database
+  db:
+    image: postgres:15-alpine
+    container_name: log_db
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: password123
+      POSTGRES_DB: log_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U admin -d log_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # 2. Backend (NestJS) - Run ในโหมด Dev เพื่อให้แก้โค้ดแล้วเปลี่ยนเลย
+  backend:
+    build: 
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: log_backend
+    # ใช้ command นี้เพื่อรอ DB พร้อมก่อนค่อย migrate และ run
+    command: >
+      sh -c "npx prisma generate && npx prisma db push && npm run start:dev"
+    ports:
+      - "3000:3000"
+    environment:
+      DATABASE_URL: postgres://admin:password123@db:5432/log_db
+    volumes:
+      - ./backend:/usr/src/app
+      - /usr/src/app/node_modules
+    depends_on:
+      db:
+        condition: service_healthy
+
+  # 3. Vector (Log Collector)
+  vector:
+    image: timberio/vector:latest-alpine
+    container_name: log_vector
+    command: ["--config", "/etc/vector/vector.toml"]
+    volumes:
+      - ./vector.toml:/etc/vector/vector.toml:ro
+    ports:
+      - "514:514/tcp"  # Syslog
+      - "514:514/udp"
+      - "8080:8080"    # Vector API Source
+    depends_on:
+      - backend
+
+  # 4. Frontend (Next.js)
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: log_frontend
+    command: npm run dev
+    # ลบ ports: - "3001:3000" ออก เพื่อไม่ให้เข้าผ่าน HTTP ธรรมดาได้
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    environment:
+      NEXT_PUBLIC_API_URL: http://localhost:3000
+    depends_on:
+      - backend
+
+  caddy:
+    image: caddy:2-alpine
+    container_name: log_caddy
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"  # เปิดพอร์ต HTTPS
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile
+      - ./caddy_data:/data
+      - ./caddy_config:/config
+    depends_on:
+      - frontend

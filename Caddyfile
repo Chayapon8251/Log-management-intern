@@ -1,0 +1,7 @@
+:443 {
+    # สั่งให้ Caddy สร้าง Self-Signed Certificate อัตโนมัติ (ตามที่โจทย์อนุญาต)
+    tls internal 
+    
+    # ส่งต่อผู้ใช้งานไปที่หน้าเว็บ Frontend ของเรา
+    reverse_proxy frontend:3000
+}

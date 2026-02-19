@@ -1,0 +1,16 @@
+node_modules/
+dist/
+.next/
+
+# Environment Variables
+.env
+.env.*
+
+# Database & Logs
+postgres_data/
+caddy_data/
+caddy_config/
+*.log
+
+# OS Files
+.DS_Store

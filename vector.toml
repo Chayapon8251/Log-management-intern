@@ -1,0 +1,73 @@
+# ==========================================
+# 1. SOURCES (แหล่งรับข้อมูล)
+# ==========================================
+
+# Source A: รับ Syslog (TCP/UDP Port 514)
+[sources.in_syslog_tcp]
+type = "syslog"
+address = "0.0.0.0:514"
+mode = "tcp"
+
+[sources.in_syslog_udp]
+type = "syslog"
+address = "0.0.0.0:514"
+mode = "udp"
+
+# Source B: รับ JSON ผ่าน HTTP (Port 8080) 
+[sources.in_http]
+type = "http_server"
+address = "0.0.0.0:8080"
+encoding = "json"
+
+# ==========================================
+# 2. TRANSFORMS (ดัดแปลง/Normalize ข้อมูล)
+# ==========================================
+
+# แปลง Syslog ให้ตรงกับ Schema
+[transforms.normalize_syslog]
+type = "remap"
+inputs = ["in_syslog_tcp", "in_syslog_udp"]
+source = '''
+  .tenant = "network_infra"
+  .source = "syslog"
+  .event_type = "network_event"
+  .severity = 5
+  .raw = string!(.message)
+
+  if contains(.raw, "deny") || contains(.raw, "blocked") {
+      .action = "deny"
+      .severity = 8
+  } else if contains(.raw, "allow") {
+      .action = "allow"
+  }
+'''
+
+[transforms.normalize_http]
+type = "remap"
+inputs = ["in_http"]
+source = '''
+  .tenant = .tenant || "default_tenant"
+  .source = .source || "api"
+  .event_type = .event_type || "unknown"
+  .severity = to_int(.severity) ?? 1
+  .raw = encode_json(.)
+  .timestamp = get!(., ["@timestamp"]) || now()
+'''
+
+# ==========================================
+# 3. SINKS (ส่งข้อมูลออก)
+# ==========================================
+
+# 1. ส่งข้อมูลไปที่ Backend NestJS
+[sinks.out_backend]
+type = "http"
+inputs = ["normalize_syslog", "normalize_http"]
+uri = "http://log_backend:3000/ingest"
+encoding.codec = "json"
+method = "post"
+
+# 2. พิมพ์ออกหน้าจอคอนโซลเพื่อ Debug
+[sinks.out_console]
+type = "console"
+inputs = ["normalize_syslog", "normalize_http"]
+encoding.codec = "json"

@@ -1,0 +1,43 @@
+// backend/prisma/schema.prisma
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Model หลักสำหรับเก็บ Log ทุกประเภท (Normalized)
+model Log {
+  id        String   @id @default(uuid())
+  
+  // --- Mandatory Fields ---
+  timestamp DateTime @default(now()) @map("@timestamp") // RFC3339 [cite: 35]
+  tenant    String   @default("default")                // แยก Tenant [cite: 35]
+  source    String                                      // e.g., firewall, api, aws [cite: 35]
+  
+  // --- Classification ---
+  eventType String   @map("event_type")                 
+  severity  Int      @default(1)                        
+  action    String?                                     
+  
+  // --- Network Context ---
+  srcIp     String?  @map("src_ip")                     
+  dstIp     String?  @map("dst_ip")                     
+  dstPort   Int?     @map("dst_port")                   
+  protocol  String?                                     
+  
+  // --- Identity & App Context ---
+  user      String?                                     
+  url       String?                                     
+  status    Int?     @map("status_code")                
+  
+  // --- Cloud & Meta ---
+  cloudRegion String? @map("cloud_region")              
+  raw         String?                                   
+  tags        String[] @map("_tags")                    
+
+  @@index([tenant, timestamp]) // Index เพื่อให้ Search เร็วตามโจทย์ 
+}
