@@ -82,7 +82,7 @@ export class AppService {
         body: JSON.stringify({ 
           content: alertMessage,
           username: "SOC Security Bot", // ชื่อบอทที่จะโชว์ใน Discord
-          avatar_url: "https://cdn-icons-png.flaticon.com/512/2092/2092663.png" // รูปโปรไฟล์บอทเท่ๆ
+          avatar_url: "https://cdn-icons-png.flaticon.com/512/2092/2092663.png" 
         }),
       });
       console.log('✅ Webhook sent successfully!');
