@@ -67,7 +67,12 @@ export class AppService {
     console.warn('================================================\n');
 
     // เอา Webhook URL ของ Discord ที่ก๊อปปี้มา วางแทนที่ในเครื่องหมายคำพูดด้านล่างนี้ครับ
-    const DISCORD_WEBHOOK_URL = 'https://discord.com/api/webhooks/1476196992513478728/XFYL8XUVKOzeYaXSZ5Qsl4ZsvWyp0aWH4AueKGwhgtmn4Hgkvutbr1MlsZW2vLx9tyeG'; 
+    const DISCORD_WEBHOOK_URL = process.env.DISCORD_WEBHOOK_URL; 
+
+    if (!DISCORD_WEBHOOK_URL) {
+      console.error(' DISCORD_WEBHOOK_URL is missing!');
+      return;
+      } 
 
     try {
       // ใช้คำสั่ง fetch ยิงข้อมูลไปที่ Discord
