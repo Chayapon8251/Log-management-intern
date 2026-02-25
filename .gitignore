@@ -6,6 +6,9 @@ dist/
 .env
 .env.*
 
+*.pem
+log-management-vm_key.pem
+
 # Database & Logs
 postgres_data/
 caddy_data/
