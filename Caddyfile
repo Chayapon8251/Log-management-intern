@@ -1,7 +1,15 @@
-:443 {
-    # สั่งให้ Caddy สร้าง Self-Signed Certificate อัตโนมัติ (ตามที่โจทย์อนุญาต)
-    tls internal 
+20-189-73-166.nip.io {
+    # ส่ง API /logs และ /ingest ไปที่ Backend
+    handle /logs* {
+        reverse_proxy log_backend:3000
+    }
     
-    # ส่งต่อผู้ใช้งานไปที่หน้าเว็บ Frontend ของเรา
-    reverse_proxy frontend:3000
+    handle /ingest* {
+        reverse_proxy log_backend:3000
+    }
+
+    # เส้นทางอื่นๆ ทั้งหมด ส่งไปที่หน้าเว็บ
+    handle {
+        reverse_proxy log_frontend:3000
+    }
 }

@@ -16,7 +16,7 @@ export default function Dashboard() {
   const fetchLogs = async () => {
     try {
       setLoading(true); // ให้มันโชว์ Loading ตอนกด Refresh จะได้ดูมีอะไรขยับ
-      const res = await fetch("http://localhost:3000/logs", {
+      const res = await fetch("/logs", {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
