@@ -12,7 +12,7 @@ export class CreateLogDto {
 
   @IsString()
   @IsOptional()
-  source?: string; // บังคับมี
+  source?: string;
 
   @IsString()
   @IsOptional()

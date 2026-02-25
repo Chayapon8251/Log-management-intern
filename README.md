@@ -1,6 +1,6 @@
 #  Security Operations Center (SOC) - Log Management
-
 โปรเจกต์นี้คือระบบจัดการและ Monitoring Log แบบรวมศูนย์ (Centralized Log Management) ที่ทำขึ้นสำหรับการทดสอบ Technical Assessment ของการฝึกงานนี้ครับ โดยระบบนี้มีการแจ้งเตือนภัยคุกคามแบบ Real-time มีการทำ CI/CD เบื้องต้นผ่าน Github Action, และ Role-Based Access Control (RBAC)
+- **Video:** [https://youtu.be/9znyLubey70](https://youtu.be/9znyLubey70)
 
 ##  Live Cloud Deployment
 - **URL:** [https://20-189-73-166.nip.io/](https://20-189-73-166.nip.io/)
